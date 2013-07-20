@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+import json
+import shutil
+from StringIO import StringIO
+import sys
+import urllib2
+
+from bs4 import BeautifulSoup
+from mutagen.id3 import ID3, APIC, TIT2, TPE1
+
+
+def download_song(song_url):
+    """Download song from the given SoundCloud URL and write to disk as an mp3.
+
+    The URL must be for a single song, not a set or an artist's page.
+
+    Title, artist, and album art metadata are included in the mp3.
+    """
+    # Get file-like object containing the song.
+    # Use StringIO so we can consume the response multiple times.
+    response = StringIO(urllib2.urlopen(song_url).read())
+    stream_url_line = get_stream_url_line(response)
+    stream_data = get_stream_data(stream_url_line)
+    song = urllib2.urlopen(stream_data['streamUrl'])
+
+    # Write the song to disk.
+    song_filename = '%s.mp3' % stream_data['title']
+    print "Writing '%s'" % song_filename
+    shutil.copyfileobj(song, open(song_filename, 'wb'))
+
+    print 'Writing song metadata...'
+    tags = ID3()
+    tags.add(TIT2(encoding=3, text=stream_data['title']))  # Track title
+    tags.add(TPE1(encoding=3, text=stream_data['user']['username']))  # Artist
+
+    # Add track artwork.
+    # First, get a URL for the artwork as a jpeg.
+    response.seek(0)
+    soup = BeautifulSoup(response)
+    artwork_img = soup.find('img', alt="Track artwork")
+    artwork_url = artwork_img.get('src') if artwork_img else None
+
+    if not artwork_url:
+        print 'Failed to find artwork URL.'
+    else:
+        print 'Writing album art...'
+        artwork = urllib2.urlopen(artwork_url)
+        tags.add(APIC(
+            encoding=3, mime='image/jpeg', desc=u'',
+            type=3,  # indicates that this is the front cover art
+            data=artwork.read())
+        )
+    tags.save(song_filename)
+
+
+def get_stream_url_line(response):
+    """Return the line with the stream url in it."""
+    for line in response:
+        if 'http://media.soundcloud.com/stream/' in line:
+            return line
+    raise ValueError("Can't find stream URL. "
+                     "Are you sure you provided the url of a song on SoundCloud?")
+
+
+def get_stream_data(stream_url_line):
+    """Return dictionary of stream data from a stream url line."""
+    # stream_url_line looks something like this
+    # window.SC.bufferTracks.push(<BIG_JAVASCRIPT_DICT>);\n
+    # Since a javascript dict is really a json dict, we decode it as one.
+    return json.loads(stream_url_line[28:-3])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise ValueError('Expecting one argument, the URL of a song on SoundCloud.')
+
+    download_song(sys.argv[1])
