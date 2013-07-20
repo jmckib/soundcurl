@@ -24,14 +24,18 @@ def download_song(song_url):
     song = urllib2.urlopen(stream_data['streamUrl'])
 
     # Write the song to disk.
-    song_filename = '%s.mp3' % stream_data['title']
+    # The format of stream_data's title is "<artist> - <song_title>"
+    song_title = stream_data['title'].split(' - ')[1]
+    song_filename = '%s.mp3' % song_title
     print "Writing '%s'" % song_filename
     shutil.copyfileobj(song, open(song_filename, 'wb'))
 
     print 'Writing song metadata...'
     tags = ID3()
-    tags.add(TIT2(encoding=3, text=stream_data['title']))  # Track title
+    tags.add(TIT2(encoding=3, text=song_title))  # Song title
+    print "\ttitle: '%s'" % song_title
     tags.add(TPE1(encoding=3, text=stream_data['user']['username']))  # Artist
+    print "\tartist: '%s'" % stream_data['user']['username']
 
     # Add track artwork.
     # First, get a URL for the artwork as a jpeg.
