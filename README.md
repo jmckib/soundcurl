@@ -10,7 +10,7 @@ Usage
 
 Provide a SoundCloud URL for a single song, and soundcurl will write the mp3 file in the current directory: 
 ```
-soundcurl https://soundcloud.com/odesza/we-were-young
+$: soundcurl https://soundcloud.com/odesza/we-were-young
 Writing 'ODESZA - We Were Young.mp3'
 Writing song metadata...
 Writing album art...
