@@ -1,7 +1,7 @@
 soundcurl
 =========
 
-A command line tool for downloading songs from SoundCloud, including metadata and album art!
+A command line tool for downloading songs from SoundCloud, including metadata and cover art!
 
 Requires python2.6+
 
@@ -15,5 +15,5 @@ Writing 'We Were Young.mp3'
 Writing song metadata...
         title: 'We Were Young'
         artist: 'ODESZA'
-Writing album art...
+Writing cover art...
 ```

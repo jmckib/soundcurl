@@ -14,7 +14,7 @@ def download_song(song_url):
 
     The URL must be for a single song, not a set or an artist's page.
 
-    Title, artist, and album art metadata are included in the mp3.
+    Title, artist, and cover art metadata are included in the mp3.
     """
     # Get file-like object containing the song.
     # Use StringIO so we can consume the response multiple times.
@@ -47,7 +47,7 @@ def download_song(song_url):
     if not artwork_url:
         print 'Failed to find artwork URL.'
     else:
-        print 'Writing album art...'
+        print 'Writing cover art...'
         artwork = urllib2.urlopen(artwork_url)
         tags.add(APIC(
             encoding=3, mime='image/jpeg', desc=u'',
