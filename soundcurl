@@ -67,8 +67,9 @@ class SoundCloudPage(object):
         tags = ID3()
         tags.add(TIT2(encoding=3, text=song_title))  # Song title
         print "\ttitle: '%s'" % song_title
-        tags.add(TPE1(encoding=3, text=self._get_artist(stream_data)))  # Artist
-        print "\tartist: '%s'" % stream_data['user']['username']
+        artist = self._get_artist(stream_data)
+        tags.add(TPE1(encoding=3, text=artist))  # Artist
+        print "\tartist: '%s'" % artist
 
         # Add track artwork.
         # First, get a URL for the artwork as a jpeg.
@@ -89,10 +90,18 @@ class SoundCloudPage(object):
         tags.save(song_filename)
 
     def _get_title(self, stream_data):
-        return stream_data['title'].split(' - ')[1]
+        try:
+            artist, title = stream_data['title'].split(' - ')
+        except ValueError:
+            title = stream_data['title']
+        return title
 
     def _get_artist(self, stream_data):
-        return stream_data['user']['username']
+        try:
+            artist, title = stream_data['title'].split(' - ')
+        except ValueError:
+            artist = stream_data['user']['username']
+        return artist
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
