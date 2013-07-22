@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from HTMLParser import HTMLParser
 import json
 import shutil
 from StringIO import StringIO
@@ -7,6 +8,8 @@ import urllib2
 
 from bs4 import BeautifulSoup
 from mutagen.id3 import ID3, APIC, TIT2, TPE1
+
+unescape_html = HTMLParser().unescape
 
 
 class SoundCloudPage(object):
@@ -57,8 +60,7 @@ class SoundCloudPage(object):
         song = urllib2.urlopen(stream_data['streamUrl'])
 
         # Write the song to disk.
-        # The format of stream_data's title is "<artist> - <song_title>"
-        song_title = self._get_title(stream_data)
+        song_title, artist = self._get_title_and_artist(stream_data)
         song_filename = '%s.mp3' % song_title
         print "Writing '%s'" % song_filename
         shutil.copyfileobj(song, open(song_filename, 'wb'))
@@ -67,7 +69,6 @@ class SoundCloudPage(object):
         tags = ID3()
         tags.add(TIT2(encoding=3, text=song_title))  # Song title
         print "\ttitle: '%s'" % song_title
-        artist = self._get_artist(stream_data)
         tags.add(TPE1(encoding=3, text=artist))  # Artist
         print "\tartist: '%s'" % artist
 
@@ -89,19 +90,13 @@ class SoundCloudPage(object):
             )
         tags.save(song_filename)
 
-    def _get_title(self, stream_data):
-        try:
-            artist, title = stream_data['title'].split(' - ')
-        except ValueError:
-            title = stream_data['title']
-        return title
-
-    def _get_artist(self, stream_data):
+    def _get_title_and_artist(self, stream_data):
         try:
             artist, title = stream_data['title'].split(' - ')
         except ValueError:
             artist = stream_data['user']['username']
-        return artist
+            title = stream_data['title']
+        return unescape_html(title), unescape_html(artist)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
