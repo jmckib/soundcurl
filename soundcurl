@@ -19,29 +19,6 @@ class SoundCloudPage(object):
         # Use StringIO so we can consume the response multiple times.
         self._http_response = StringIO(urllib2.urlopen(page_url).read())
 
-    def _get_fresh_http_response(self):
-        self._http_response.seek(0)
-        return self._http_response
-
-    def _get_stream_url_lines(self):
-        """Return an iterator of the stream url lines in the http response."""
-        return (line for line in self._get_fresh_http_response()
-                if 'http://media.soundcloud.com/stream/' in line)
-
-    def _get_stream_url_line(self):
-        """Return the first line in the http response with a stream url in it.
-
-        If there are no stream urls, return None.
-        """
-        return next(self._get_stream_url_lines(), None)
-
-    def _get_stream_data(self, stream_url_line):
-        """Return dictionary of stream data from a stream url line."""
-        # stream_url_line looks something like this
-        # window.SC.bufferTracks.push(<BIG_JAVASCRIPT_DICT>);\n
-        # Since a javascript dict is really a json dict, we decode it as one.
-        return json.loads(stream_url_line[28:-3])
-
     def download_song(self):
         """Download song from given SoundCloud URL and write to disk as mp3.
 
@@ -89,6 +66,39 @@ class SoundCloudPage(object):
                 data=artwork.read())
             )
         tags.save(song_filename)
+
+    def _get_fresh_http_response(self):
+        self._http_response.seek(0)
+        return self._http_response
+
+    def _get_stream_url_lines(self):
+        """Return an iterator of the stream url lines in the http response.
+
+        A "stream url line" is a line of javascript code in the page's html
+        that contains the url of an mp3. The stream url lines are in the same
+        order as the songs on the page.
+        """
+        return (line for line in self._get_fresh_http_response()
+                if 'http://media.soundcloud.com/stream/' in line)
+
+    def _get_stream_url_line(self):
+        """Return the first line in the http response with a stream url in it.
+
+        If there are no stream urls, return None. See `_get_stream_url_lines`
+        for more explanation.
+        """
+        return next(self._get_stream_url_lines(), None)
+
+    def _get_stream_data(self, stream_url_line):
+        """Return dictionary of stream data from a stream url line."""
+        # stream_url_line looks something like this
+        # window.SC.bufferTracks.push(<BIG_JAVASCRIPT_DICT>);\n
+        # Since a javascript dict is really a json dict, we decode it as one.
+        return json.loads(stream_url_line[28:-3])
+
+    def _get_all_stream_data(self):
+        return (self._get_stream_data(stream_url_line) for stream_url_line
+                in self._get_stream_url_lines())
 
     def _get_title_and_artist(self, stream_data):
         try:
