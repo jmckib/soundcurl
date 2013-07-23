@@ -12,6 +12,14 @@ from mutagen.id3 import ID3, APIC, TIT2, TPE1
 unescape_html = HTMLParser().unescape
 
 
+def main():
+    if len(sys.argv) != 2:
+        raise ValueError('Expecting one argument, the URL of a song on SoundCloud.')
+
+    sound_cloud_page = SoundCloudPage(sys.argv[1])
+    sound_cloud_page.download_song()
+
+
 class SoundCloudPage(object):
 
     def __init__(self, page_url):
@@ -107,10 +115,3 @@ class SoundCloudPage(object):
             artist = stream_data['user']['username']
             title = stream_data['title']
         return unescape_html(title), unescape_html(artist)
-
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        raise ValueError('Expecting one argument, the URL of a song on SoundCloud.')
-
-    sound_cloud_page = SoundCloudPage(sys.argv[1])
-    sound_cloud_page.download_song()

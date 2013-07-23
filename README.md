@@ -17,3 +17,12 @@ Writing song metadata...
         artist: 'ODESZA'
 Writing cover art...
 ```
+
+Installation
+------
+
+```Shell
+git clone git@github.com:jmckib/soundcurl.git
+cd soundcurl
+python setup.py install
+```
