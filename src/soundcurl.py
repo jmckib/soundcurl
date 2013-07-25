@@ -23,9 +23,12 @@ def main():
 class SoundCloudPage(object):
 
     def __init__(self, page_url):
-        self._page_url = page_url
+        # Http GET parameters screw up the expected format of the page
+        # sometimes. Example: `?fb_action_ids` from soundcloud links on
+        # facebook.
+        self._page_url = page_url.split('?')[0]
         # Use StringIO so we can consume the response multiple times.
-        self._http_response = StringIO(urllib2.urlopen(page_url).read())
+        self._http_response = StringIO(urllib2.urlopen(self._page_url).read())
 
     def download_song(self):
         """Download song from given SoundCloud URL and write to disk as mp3.
@@ -115,3 +118,6 @@ class SoundCloudPage(object):
             artist = stream_data['user']['username']
             title = stream_data['title']
         return unescape_html(title), unescape_html(artist)
+
+if __name__ == '__main__':
+    main()
