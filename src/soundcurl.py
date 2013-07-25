@@ -4,6 +4,7 @@ import json
 import shutil
 from StringIO import StringIO
 import sys
+import traceback
 import urllib2
 
 from bs4 import BeautifulSoup
@@ -13,11 +14,16 @@ unescape_html = HTMLParser().unescape
 
 
 def main():
-    if len(sys.argv) != 2:
-        raise ValueError('Expecting one argument, the URL of a song on SoundCloud.')
+    try:
+        if len(sys.argv) != 2:
+            raise ValueError('Expecting one argument, the URL of a song on SoundCloud.')
 
-    sound_cloud_page = SoundCloudPage(sys.argv[1])
-    sound_cloud_page.download_song()
+        sound_cloud_page = SoundCloudPage(sys.argv[1])
+        sound_cloud_page.download_song()
+    except:
+        traceback.print_exception(*sys.exc_info())
+        print ('\nSorry, you just experienced an error :(\nPlease it '
+               'to me here: https://github.com/jmckib/soundcurl/issues/new')
 
 
 class SoundCloudPage(object):
