@@ -49,7 +49,9 @@ class SoundCloudPage(object):
 
         # Write the song to disk.
         song_title, artist = self._get_title_and_artist(stream_data)
-        song_filename = '%s.mp3' % song_title
+        # Believe it or not, there are songs with forward slahes in their
+        # titles, but we can't use that as a file name.
+        song_filename = '%s.mp3' % song_title.replace('/', '|')
         print "Writing '%s'" % song_filename
         shutil.copyfileobj(song, open(song_filename, 'wb'))
 
