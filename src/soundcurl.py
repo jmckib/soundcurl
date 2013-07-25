@@ -117,7 +117,7 @@ class SoundCloudPage(object):
         except ValueError:
             artist = stream_data['user']['username']
             title = stream_data['title']
-        return unescape_html(title), unescape_html(artist)
+        return unescape_html(title).strip(), unescape_html(artist).strip()
 
 if __name__ == '__main__':
     main()
